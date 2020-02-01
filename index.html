@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Verwandlung</title>
+<style>
+[data-tip] {
+	position: relative;
+}
+
+[data-tip]:before {
+	content: '';
+	/* hides the tooltip when not hovered */
+	display: none;
+	content: '';
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-bottom: 5px solid #1a1a1a;
+	position: absolute;
+	top: 30px;
+	left: 35px;
+	z-index: 8;
+	font-size: 0;
+	line-height: 0;
+	width: 0;
+	height: 0;
+}
+
+[data-tip]:after {
+	display: none;
+	content: attr(data-tip);
+	position: absolute;
+	top: 35px;
+	left: 0px;
+	padding: 5px 8px;
+	background: #1a1a1a;
+	color: #fff;
+	z-index: 9;
+	font-size: 0.75em;
+	height: 18px;
+	line-height: 18px;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius: 3px;
+	white-space: nowrap;
+	word-wrap: normal;
+}
+
+[data-tip]:hover:before, [data-tip]:hover:after {
+	display: block;
+}
+</style>
+<script type="text/javascript">
+	window.regExp = /(1|0)[\s]+(1|0)[\s]+(1|0)/;
+	window.repNl = "; ";
+
+	var d = new Date();
+	var n = d.getHours();
+
+	window.emojis = [ 0x1F600, 0x1F604, 0x1F34A, 0x1F344, 0x1F37F, 0x1F363,
+			0x1F370, 0x1F355, 0x1F354, 0x1F35F, 0x1F6C0, 0x1F48E, 0x1F5FA,
+			0x23F0, 0x1F579, 0x1F4DA, 0x1F431, 0x1F42A, 0x1F439, 0x1F424 ];
+
+	window.m1 = "Ich wünsche Dir einen wunderschönen gut Morgen =)";
+	window.m2 = "Mahlzeit! An Guadn! Itadakimasu! Eet Smakelijk!";
+	window.m3 = "Schönen guten Nachmittag :-]";
+	window.m4 = "Schönen guten Tag :-)";
+	window.m1337 = "5ch03n3n 6u73n 746.";
+	window.m5 = "Guten Abend ";
+
+	window.onload = function() {
+		setzePlatzhalter();
+	};
+
+	function getRndInteger(min, max) {
+		return Math.floor(Math.random() * (max - min)) + min;
+	}
+
+	function setzePlatzhalter() {
+		if (n > 0 && n < 12) {
+			document.getElementById("txtArea").placeholder = window.m1;
+		} else if (n >= 12 && n < 13) {
+			document.getElementById("txtArea").placeholder = window.m2;
+		} else if (n >= 13 && n < 15) {
+			if (n == 13 && d.getMinutes() == 37) {
+				document.getElementById("txtArea").placeholder = window.m1337;
+			} else {
+				document.getElementById("txtArea").placeholder = window.m4;
+			}
+		} else if (n >= 15 && n < 17) {
+			document.getElementById("txtArea").placeholder = window.m3;
+		} else if (n >= 18 && n < 23) {
+			document.getElementById("txtArea").placeholder = window.m5
+					+ String.fromCodePoint(window.emojis[getRndInteger(0,
+							window.emojis.length)]);
+		} else if (n == 0) {
+			document.getElementById("txtArea").placeholder = "GUTE NACHT!";
+		} else {
+			document.getElementById("txtArea").placeholder = "Hier kann man reinkopieren";
+		}
+	}
+
+	function setzeRegex() {
+		window.regExp = document.getElementById("inpRegExp").value;
+		verwandle();
+	}
+	function setzeErsetze() {
+		window.repExp = document.getElementById("inpRepExp").value;
+		verwandle();
+	}
+	function setzeZeilenumbruch() {
+		window.repNl = document.getElementById("inpRepNl").value;
+		verwandle();
+	}
+
+	function verwandle() {
+		var txtAreaTxt = document.getElementById("txtArea").value;
+		var getTextArea2 = document.getElementById("txtArea2");
+
+		if (!txtAreaTxt.endsWith("\n")) {
+			txtAreaTxt = txtAreaTxt + "\n";
+		}
+		var lines = txtAreaTxt.split('\n');
+		getTextArea2.value = "";
+		//console.log(txtAreaTxt);
+		//console.log(lines);
+		for (var step = 0; step < lines.length; step++) {
+			var txtVal = lines[step];
+			//console.log(txtVal);
+			if (isBlank(txtVal)) {
+				continue;
+			}
+			var match = window.regExp.exec(txtVal);
+			//console.log(match);
+			if (match) {
+				//console.log("index" + match.index);
+				//console.log("lastindex" + match.length);
+				if (match.index > 0) {
+					var t = getTextArea2.value
+							+ txtVal.substring(0, match.index);
+					t = t.replace(/\t/g, "");
+					t = t.trim();
+					if (!isBlank(t + " ")) {
+						getTextArea2.value = t + " ";
+					}
+				}
+				getTextArea2.value = getTextArea2.value + match[1] + "-"
+						+ match[2] + "-" + match[3];
+				var lastIndex = match.length + match.index + 1;
+				if (lastIndex < txtVal.length) {
+					var t = txtVal.substring(lastIndex, txtVal.length);
+					t = t.replace(/\t/g, "");
+					t = t.trim();
+					if (!isBlank(t)) {
+						getTextArea2.value = getTextArea2.value + " " + t;
+					}
+				}
+			} else {
+				txtVal = txtVal.replace(/\t+/g, " ");
+				txtVal = txtVal.trim();
+				getTextArea2.value = getTextArea2.value + txtVal;
+			}
+			if (!isBlank(getTextArea2.value)) {
+				getTextArea2.value = getTextArea2.value + window.repNl;
+			}
+		}
+		if (getTextArea2.value.endsWith(window.repNl)) {
+			getTextArea2.value = getTextArea2.value.substring(0,
+					getTextArea2.value.length - window.repNl.length);
+		}
+		getTextArea2.value = getTextArea2.value.trim();
+		document.getElementById("inpRegExp").value = window.regExp;
+		document.getElementById("inpRepNl").value = window.repNl;
+	}
+
+	function isBlank(str) {
+		return (!str || /^\s*$/.test(str) || !str.trim());
+	}
+
+	function setzeBeispiel() {
+		document.getElementById("txtArea").value = "Torasemid 20 mg	1	0	0		\n"
+				+ "Amlodipin 5mg	1	0	0		\n" + "Bisoprolol 2,5mg	0	0	1		\n"
+				+ "Allopurinol 100mg	0	1	0		\n" + "Nephrotrans 840mg	1	1	1		\n"
+				+ "Ramipril 5mg	1	0	0		\n" + "ISMN 20mg	0	0	1		\n"
+				+ "Simvastatin 40mg	0	0	1		\n" + "Apidra					Nach Plan\n"
+				+ "Lantus					Nach Plan";
+		verwandle();
+	}
+</script>
+
+</head>
+<body>
+	<textarea rows="20" cols="170" id="txtArea" tabindex="1" autofocus
+		placeholder="Hier kann man reinkopieren (Einen Wundersch&ouml;nen Guten Morgen =)"
+		onchange="verwandle()" oninput="verwandle()"></textarea>
+	<br />
+	<textarea rows="7" cols="170" id="txtArea2" tabindex="2"
+		onClick="this.setSelectionRange(0, this.value.length)"
+		onfocus="this.setSelectionRange(0, this.value.length)"
+		placeholder="Hier kann man rauskopieren" readonly></textarea>
+	<br /> Suchkern:
+	<br />
+	<div data-tip="Regular Expression">
+		<input id="inpRegExp" tabindex="5" value="Regular Expression"
+			onclick="setzeRegex()" onchange="setzeRegex()" oninput="setzeRegex()" />
+	</div>
+	<br />
+
+	<div style="width: 900px;">
+		<div style="float: left;">
+			<div data-tip="Replace Newline">
+				<input id="inpRepNl" tabindex="7" value="Replace Newline"
+					onclick="setzeZeilenumbruch()" onchange="setzeZeilenumbruch()"
+					oninput="setzeZeilenumbruch()" />
+			</div>
+		</div>
+		<div style="float: right; text-align: right;">
+			<button style="background-color: #d1d1d1;" onclick="setzeBeispiel()">Beispieldaten</button>
+		</div>
+	</div>
+
+
+</body>
+</html>
